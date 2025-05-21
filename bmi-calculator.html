@@ -82,28 +82,18 @@
       box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
     }
 
-    .progress-bar {
-      margin-top: 20px;
-      width: 100%;
-      height: 20px;
-      background: #ddd;
-      border-radius: 10px;
-      overflow: hidden;
-      box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-    }
-
-    .progress {
-      height: 100%;
-      background: #2575fc;
-      width: 0;
-      transition: width 0.5s ease;
-    }
-
     .bmi-category {
       margin-top: 10px;
       font-size: 1.2rem;
       color: #333;
       font-weight: bold;
+    }
+
+    /* Center the canvas */
+    #bmi-pie {
+      display: block;
+      margin: 20px auto 0 auto;
+      background: transparent;
     }
   </style>
 </head>
@@ -114,9 +104,7 @@
     <input type="number" id="height" placeholder="Enter height (m)" />
     <button onclick="calculateBMI()">Calculate BMI</button>
     <div class="result" id="bmi-result">Your BMI will appear here</div>
-    <div class="progress-bar">
-      <div class="progress" id="bmi-progress"></div>
-    </div>
+    <canvas id="bmi-pie" width="120" height="120"></canvas>
     <div class="bmi-category" id="bmi-category"></div>
   </div>
 
@@ -129,7 +117,7 @@
       if (isNaN(weight) || isNaN(height) || height <= 0) {
         result = 'Please enter valid weight and height.';
         document.getElementById('bmi-result').textContent = result;
-        document.getElementById('bmi-progress').style.width = '0';
+        drawPie(0, '#e0e0e0');
         document.getElementById('bmi-category').textContent = '';
         return;
       }
@@ -138,12 +126,10 @@
       result = `Your BMI is ${bmi.toFixed(2)}`;
       document.getElementById('bmi-result').textContent = result;
 
-      const progress = Math.min((bmi / 40) * 100, 100); // Cap progress at 100%
-      document.getElementById('bmi-progress').style.width = `${progress}%`;
-
+      const progress = Math.min(bmi / 40, 1); // Cap at 1 (100%)
       const category = getBMICategory(bmi);
       document.getElementById('bmi-category').textContent = `Category: ${category}`;
-      document.getElementById('bmi-progress').style.backgroundColor = getCategoryColor(category);
+      drawPie(progress, getCategoryColor(category));
     }
 
     function getBMICategory(bmi) {
@@ -156,17 +142,47 @@
     function getCategoryColor(category) {
       switch (category) {
         case 'Underweight':
-          return '#ffc107'; // Yellow
+          return '#00bcd4'; // Cyan
         case 'Normal weight':
-          return '#28a745'; // Green
+          return '#4caf50'; // Green
         case 'Overweight':
-          return '#fd7e14'; // Orange
+          return '#ff9800'; // Orange
         case 'Obesity':
-          return '#dc3545'; // Red
+          return '#f44336'; // Red
         default:
-          return '#2575fc'; // Default Blue
+          return '#607d8b'; // Blue Grey
       }
     }
+
+    // Draw pie chart for BMI progress
+    function drawPie(progress, color) {
+      const canvas = document.getElementById('bmi-pie');
+      const ctx = canvas.getContext('2d');
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      // Draw background circle
+      ctx.beginPath();
+      ctx.arc(60, 60, 50, 0, 2 * Math.PI);
+      ctx.fillStyle = '#e0e0e0';
+      ctx.fill();
+
+      // Draw progress arc
+      ctx.beginPath();
+      ctx.moveTo(60, 60);
+      ctx.arc(60, 60, 50, -0.5 * Math.PI, (progress * 2 * Math.PI) - 0.5 * Math.PI, false);
+      ctx.closePath();
+      ctx.fillStyle = color;
+      ctx.fill();
+
+      // Draw inner white circle for donut effect
+      ctx.beginPath();
+      ctx.arc(60, 60, 35, 0, 2 * Math.PI);
+      ctx.fillStyle = '#fff';
+      ctx.fill();
+    }
+
+    // Draw initial empty pie
+    drawPie(0, '#e0e0e0');
   </script>
 </body>
 </html>
